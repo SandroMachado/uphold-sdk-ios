@@ -27,7 +27,7 @@ class LoginViewController: UIViewController, SFSafariViewControllerDelegate {
     @IBAction func didTapLoginButton(sender: AnyObject) {
         self.client = UpholdClient()
         self.loginButton.enabled = false
-        let scopes: [String] = ["cards:read", "user:read"]
+        let scopes: [String] = ["cards:read", "user:read", "transactions:transfer:others"]
         self.state = String(format: "oauth2:%@", NSUUID().UUIDString)
 
         guard let client = self.client, state = self.state else {
@@ -53,7 +53,7 @@ class LoginViewController: UIViewController, SFSafariViewControllerDelegate {
     func completeAuthorization(url: NSURL) {
         let userViewController = UserViewController()
 
-        guard authorizationViewController = self.authorizationViewController, client = self.client, state = self.state else {
+        guard let authorizationViewController = self.authorizationViewController, client = self.client, state = self.state else {
             return self.handleError()
         }
 

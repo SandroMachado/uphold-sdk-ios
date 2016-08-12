@@ -35,13 +35,26 @@ class UserViewController: UIViewController {
             self.user = user
 
             return user.getCards()
-        }.then { (cards: [Card]) -> () in
+        }.then { (cards: [Card]) -> Promise<Transaction> in
             guard let user = self.user, firstName = user.firstName else {
-                return
+                return Promise<Transaction>(error: UnexpectedResponseError(message: "The user should not be nil."))
             }
 
             self.authenticatedLabel.text = String(format: NSLocalizedString("user-view-controller.presenting-data", comment: "Presenting data."), firstName, cards.count)
-        }.error { (error: ErrorType) -> Void in
+
+            for card in cards {
+                if card.currency! == "BTC" {
+                    let transactionDenominationRequest = TransactionDenominationRequest(amount: "1.0", currency: "EUR")
+                    let transactionTransferRequest = TransactionTransferRequest(denomination: transactionDenominationRequest, destination: "foo@bar.com")
+
+                    return card.createTransaction(true, transactionRequest: transactionTransferRequest)
+                }
+            }
+
+            return Promise<Transaction>(error: UnexpectedResponseError(message: "The user should have a card with the BTC currency"))
+        }.then({ (transaction: Transaction) -> () in
+            print(transaction.id)
+        }).error { (error: ErrorType) -> Void in
             self.handleError()
         }
     }
